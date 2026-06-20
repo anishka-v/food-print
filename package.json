@@ -1,0 +1,12 @@
+{
+  "name": "eco-dining-browserbase-agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scrape:crossroads-menu": "node browserbase_crossroads_menu_agent.mjs"
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "^3.0.0",
+    "zod": "^3.23.8"
+  }
+}
