@@ -82,8 +82,8 @@ async def analyze_plate_with_gemini(before_img: np.ndarray, after_img: np.ndarra
                     "name": "food item name",
                     "initial_portion": "description of initial amount (e.g., 'full serving', '6 oz')",
                     "remaining_portion": "description of remaining amount",
-                    "waste_percentage": <number between 0-100>,
-                    "estimated_weight_oz": <estimated weight in ounces>,
+                    "waste_percentage": <number between 0-100 representing how much was LEFT/WASTED, not eaten>,
+                    "estimated_weight_oz": <estimated weight of WASTED food in ounces>,
                     "category": "entree/side/vegetable/dessert/beverage"
                 }
             ],
@@ -91,14 +91,15 @@ async def analyze_plate_with_gemini(before_img: np.ndarray, after_img: np.ndarra
             "suggestions": ["actionable tip 1", "actionable tip 2"]
         }
         
-        Be specific about each distinct food item you can identify. For waste_percentage:
-        - 0-10%: Almost everything eaten
-        - 10-25%: Small amount left
-        - 25-50%: Moderate amount left
-        - 50-75%: Significant amount left
-        - 75-100%: Most/all food left
+        IMPORTANT: waste_percentage should represent the percentage of food that was LEFT ON THE PLATE (wasted), 
+        not the percentage that was eaten. For example:
+        - If someone ate everything: waste_percentage = 0-10%
+        - If someone ate most of it: waste_percentage = 10-25%
+        - If someone ate half: waste_percentage = 40-60%
+        - If someone barely touched it: waste_percentage = 75-100%
         
-        Focus on accuracy and be realistic about portion sizes typical in college dining halls."""
+        Be specific about each distinct food item you can identify. Focus on accuracy and be realistic 
+        about portion sizes typical in college dining halls."""
         
         # Generate analysis
         response = gemini_model.generate_content([prompt, before_pil, after_pil])
@@ -137,12 +138,12 @@ def use_fallback_detection(before_img: np.ndarray, after_img: np.ndarray) -> Dic
                 "name": "Mixed Plate",
                 "initial_portion": "Full serving",
                 "remaining_portion": f"{int((1 - waste_pct) * 100)}% remaining",
-                "waste_percentage": round(waste_pct * 100, 1),
-                "estimated_weight_oz": round(8 * waste_pct, 2),
+                "waste_percentage": round((1 - waste_pct) * 100, 1),
+                "estimated_weight_oz": round(8 * (1 - waste_pct), 2),
                 "category": "mixed"
             }
         ],
-        "overall_assessment": f"Approximately {int((1 - waste_pct) * 100)}% of food was consumed.",
+        "overall_assessment": f"Approximately {int((waste_pct) * 100)}% of food was consumed, {int((1- waste_pct) * 100)}% wasted.",
         "suggestions": generate_tips_from_waste(waste_pct)
     }
 
@@ -150,32 +151,55 @@ def use_fallback_detection(before_img: np.ndarray, after_img: np.ndarray) -> Dic
 def estimate_waste_percentage_cv(before_img: np.ndarray, after_img: np.ndarray) -> float:
     """
     Estimate waste percentage using computer vision (fallback method).
+    Compares the amount of food before vs after eating.
     """
     try:
-        # Convert to HSV for better food detection
-        before_hsv = cv2.cvtColor(before_img, cv2.COLOR_BGR2HSV)
-        after_hsv = cv2.cvtColor(after_img, cv2.COLOR_BGR2HSV)
+        # Resize images to same size if needed
+        h, w = before_img.shape[:2]
+        after_img = cv2.resize(after_img, (w, h))
         
-        # Create masks for food-like colors (excluding plate/background)
-        lower_food = np.array([0, 20, 20])
-        upper_food = np.array([180, 255, 255])
+        # Convert to LAB color space for better food detection
+        before_lab = cv2.cvtColor(before_img, cv2.COLOR_BGR2LAB)
+        after_lab = cv2.cvtColor(after_img, cv2.COLOR_BGR2LAB)
         
-        before_mask = cv2.inRange(before_hsv, lower_food, upper_food)
-        after_mask = cv2.inRange(after_hsv, lower_food, upper_food)
+        # Get L channel (lightness) - plates are usually lighter than food
+        before_l = before_lab[:, :, 0]
+        after_l = after_lab[:, :, 0]
+        
+        # Get A and B channels (color) - food has more color than white plates
+        before_a = before_lab[:, :, 1]
+        before_b = before_lab[:, :, 2]
+        after_a = after_lab[:, :, 1]
+        after_b = after_lab[:, :, 2]
+        
+        # Calculate color intensity (food has more color variation)
+        before_color = np.abs(before_a - 128) + np.abs(before_b - 128)
+        after_color = np.abs(after_a - 128) + np.abs(after_b - 128)
+        
+        # Threshold to detect food (areas with significant color)
+        before_mask = before_color > 15  # Areas with food have more color
+        after_mask = after_color > 15
         
         # Calculate food area
-        before_area = np.sum(before_mask > 0)
-        after_area = np.sum(after_mask > 0)
+        before_food_pixels = np.sum(before_mask)
+        after_food_pixels = np.sum(after_mask)
         
-        if before_area == 0:
+        print(f"DEBUG CV: Before pixels: {before_food_pixels}, After pixels: {after_food_pixels}")
+        
+        if before_food_pixels == 0:
             return 0.0
         
-        waste_percentage = (after_area) / before_area
+        # Waste percentage = food remaining after eating / original food amount
+        waste_percentage = after_food_pixels / before_food_pixels
         waste_percentage = max(0.0, min(1.0, waste_percentage))
+        
+        print(f"DEBUG CV: Calculated waste: {waste_percentage * 100:.1f}%")
         
         return waste_percentage
     except Exception as e:
         print(f"Error in waste estimation: {e}")
+        import traceback
+        traceback.print_exc()
         return 0.5
 
 
