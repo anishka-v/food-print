@@ -28,6 +28,12 @@ Crossroads for today:
 npm run scrape:crossroads-menu
 ```
 
+All supported Berkeley dining halls:
+
+```bash
+npm run scrape:all-menus
+```
+
 Print JSON too:
 
 ```bash
@@ -43,7 +49,7 @@ node browserbase_crossroads_menu_agent.mjs --date "Tomorrow"
 Pick a different hall:
 
 ```bash
-node browserbase_crossroads_menu_agent.mjs --location "Café 3"
+node browserbase_crossroads_menu_agent.mjs --location "Cafe 3"
 ```
 
 ## Output

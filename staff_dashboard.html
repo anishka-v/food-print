@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>foodprint staff dashboard</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: #fffaf2;
+      --ink: #1d2a22;
+      --muted: #66736b;
+      --line: rgba(29, 42, 34, 0.12);
+      --accent: #0d7c66;
+      --accent-2: #ec6f43;
+      --accent-3: #f4bf4f;
+      --danger: #bf3f35;
+      --success: #1f8b4c;
+      --shadow: 0 20px 40px rgba(29, 42, 34, 0.08);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background: #dfeadf;
+    }
+
+    .shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 1.1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+      align-items: stretch;
+    }
+
+    .hero-card, .panel {
+      background: color-mix(in srgb, var(--paper) 86%, white 14%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 28px;
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -50px;
+      bottom: -60px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(13, 124, 102, 0.18), rgba(244, 191, 79, 0.25));
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: clamp(2.4rem, 5vw, 4.2rem);
+      line-height: 0.92;
+      max-width: 8ch;
+      margin-bottom: 0;
+      letter-spacing: -0.05em;
+      font-weight: 700;
+    }
+
+    .hero-copy {
+      max-width: 56ch;
+      color: #38453e;
+      line-height: 1.45;
+      font-size: 1rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(29, 42, 34, 0.06);
+      font-size: 0.88rem;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .controls-panel {
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    select, input, textarea, button {
+      font: inherit;
+    }
+
+    select, input, textarea {
+      width: 100%;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      color: var(--ink);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button.secondary { background: rgba(29, 42, 34, 0.12); color: var(--ink); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .metric {
+      padding: 20px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .metric .value {
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      margin-top: 10px;
+      margin-bottom: 8px;
+    }
+
+    .metric .sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .section-title.loose {
+      margin-bottom: 28px;
+    }
+
+    .section-title small {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .bar-list, .insight-list, .food-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 66px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-track {
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(29, 42, 34, 0.08);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+    }
+
+    .trend-bars {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      min-height: 250px;
+      padding-top: 10px;
+    }
+
+    .trend-col {
+      flex: 1;
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+    }
+
+    .trend-visual {
+      width: 68%;
+      border-radius: 16px 16px 6px 6px;
+      background: linear-gradient(180deg, #efb59b, #f5d28b);
+      min-height: 18px;
+    }
+
+    .trend-label, .trend-value {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .insight {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .insight[data-priority="high"] { border-left: 6px solid var(--danger); }
+    .insight[data-priority="medium"] { border-left: 6px solid var(--accent-2); }
+    .insight[data-priority="low"] { border-left: 6px solid var(--accent); }
+    .insight[data-priority="info"] { border-left: 6px solid var(--accent-3); }
+
+    .food-row {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr 0.8fr;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .food-row:last-child { border-bottom: 0; }
+    .food-name { font-weight: 700; }
+    .food-meta { color: var(--muted); font-size: 0.9rem; }
+    .see-more-wrap {
+      margin-top: 14px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .events-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .event-card {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid var(--line);
+    }
+
+    .event-thumb {
+      width: 120px;
+      height: 120px;
+      border-radius: 16px;
+      object-fit: cover;
+      background: rgba(29, 42, 34, 0.08);
+      border: 1px solid var(--line);
+    }
+
+    .event-body {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .event-meta {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .meal-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid var(--line);
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+
+    textarea[readonly] {
+      background: rgba(255, 255, 255, 0.92);
+      cursor: default;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+
+    @media (max-width: 1040px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .menu-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      .shell { padding: 16px; }
+      .metrics { grid-template-columns: 1fr; }
+      .bar-row, .food-row { grid-template-columns: 1fr; }
+      .trend-bars { min-height: 180px; }
+      .event-card { grid-template-columns: 1fr; }
+      .event-thumb { width: 100%; height: 180px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">Dining Hall Dashboard</div>
+        <h1>foodprint</h1>
+        <div class="hero-meta">
+          <div class="pill" id="heroDate">Loading date…</div>
+          <div class="pill">Berkeley</div>
+          <div class="pill">
+            <select id="diningHallSelect" style="border:0;background:transparent;padding:0;color:inherit;font:inherit">
+              <option value="Crossroads">Crossroads</option>
+              <option value="Foothill">Foothill</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="hero-side">
+        <div class="panel controls-panel">
+          <div class="section-title">
+            <h2>Controls And Menu Log</h2>
+          </div>
+          <div class="control-row" style="margin-top:0">
+            <div style="flex:1 1 160px">
+              <label for="daysSelect">Trend window</label>
+              <select id="daysSelect">
+                <option value="7">Last 7 days</option>
+                <option value="14" selected>Last 14 days</option>
+                <option value="30">Last 30 days</option>
+              </select>
+            </div>
+            <div style="flex:1 1 180px">
+              <label for="menuDate">Date</label>
+              <input id="menuDate" type="date">
+            </div>
+          </div>
+          <div class="control-row">
+            <button id="refreshBtn">Refresh</button>
+            <button class="secondary" id="useTodayBtn">Set menu date to today</button>
+          </div>
+          <div class="status" id="menuStatus" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics" id="metrics"></section>
+
+    <section class="grid">
+      <div class="panel">
+        <div class="section-title loose">
+          <h2>Waste By Meal</h2>
+        </div>
+        <div class="bar-list" id="mealBars"></div>
+      </div>
+      <div class="panel">
+        <div class="section-title">
+          <h2>Daily Trend</h2>
+        </div>
+        <div class="trend-bars" id="trendBars"></div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <div class="section-title">
+          <h2>Dining Hall Menu Waste</h2>
+        </div>
+        <div class="food-list" id="foodList"></div>
+      </div>
+      <div class="panel">
+        <div class="section-title">
+          <h2>Insights</h2>
+        </div>
+        <div class="insight-list" id="insights"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Daily Menu Log</h2>
+      </div>
+      <div class="menu-grid">
+        <div class="meal-card">
+          <div class="eyebrow">Breakfast</div>
+          <button class="secondary add-menu-item-btn" data-meal="breakfast" style="margin-top:6px">Add menu item</button>
+          <textarea id="breakfastInput" readonly placeholder="Scrambled Eggs&#10;Poblano Fries&#10;Oatmeal"></textarea>
+        </div>
+        <div class="meal-card">
+          <div class="eyebrow">Lunch</div>
+          <button class="secondary add-menu-item-btn" data-meal="lunch" style="margin-top:6px">Add menu item</button>
+          <textarea id="lunchInput" readonly placeholder="Halal Rosemary Chicken&#10;Yemeni Beef Stew&#10;Pita Bread"></textarea>
+        </div>
+        <div class="meal-card">
+          <div class="eyebrow">Dinner</div>
+          <button class="secondary add-menu-item-btn" data-meal="dinner" style="margin-top:6px">Add menu item</button>
+          <textarea id="dinnerInput" readonly placeholder="Tofu Thai Curry&#10;Penne Pasta&#10;Braised Bok Choy"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:20px">
+      <div class="section-title">
+        <h2>Recent Plate Events</h2>
+      </div>
+      <div class="events-list" id="recentEvents"></div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      schoolId: "school_001",
+      diningHall: "Crossroads",
+      overviewFoods: [],
+      menuItems: [],
+      showAllMenuFoods: false,
+      usingRealData: false,
+    };
+
+    const el = {
+      metrics: document.getElementById("metrics"),
+      mealBars: document.getElementById("mealBars"),
+      trendBars: document.getElementById("trendBars"),
+      foodList: document.getElementById("foodList"),
+      insights: document.getElementById("insights"),
+      recentEvents: document.getElementById("recentEvents"),
+      daysSelect: document.getElementById("daysSelect"),
+      menuDate: document.getElementById("menuDate"),
+      menuStatus: document.getElementById("menuStatus"),
+      diningHallSelect: document.getElementById("diningHallSelect"),
+      breakfastInput: document.getElementById("breakfastInput"),
+      lunchInput: document.getElementById("lunchInput"),
+      dinnerInput: document.getElementById("dinnerInput"),
+      heroDate: document.getElementById("heroDate"),
+    };
+
+    function todayLocalDate() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset();
+      const local = new Date(now.getTime() - offset * 60 * 1000);
+      return local.toISOString().slice(0, 10);
+    }
+
+    function mealToTitle(meal) {
+      return meal.charAt(0).toUpperCase() + meal.slice(1);
+    }
+
+    function renderMetrics(totals) {
+      const cards = [
+        { label: "Average waste", value: `${totals.avg_waste_pct.toFixed(1)}%`, sub: "Across all recent scans" },
+        { label: "Waste today window", value: `${totals.weight_lbs.toFixed(1)} lbs`, sub: "Estimated edible food lost" },
+        { label: "Food cost impact", value: `$${totals.cost_usd.toFixed(2)}`, sub: "Estimated food cost lost" },
+        { label: "Scan volume", value: `${totals.total_scans}`, sub: "Plates analyzed in window" },
+      ];
+
+      el.metrics.innerHTML = cards.map(card => `
+        <article class="metric">
+          <div class="eyebrow">${card.label}</div>
+          <div class="value">${card.value}</div>
+          <div class="sub">${card.sub}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderMealBars(meals) {
+      el.mealBars.innerHTML = meals.map(meal => {
+        const pct = Math.max(4, Math.min(100, meal.avg_waste_pct));
+        return `
+          <div class="bar-row">
+            <strong>${mealToTitle(meal.meal)}</strong>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <span>${meal.avg_waste_pct.toFixed(1)}%</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderTrendBars(days) {
+      if (!days.length) {
+        el.trendBars.innerHTML = "<p>No trend data yet.</p>";
+        return;
+      }
+      const maxWaste = Math.max(...days.map(day => day.avg_waste_pct), 1);
+      el.trendBars.innerHTML = days.map(day => {
+        const height = Math.max(20, (day.avg_waste_pct / maxWaste) * 190);
+        const label = day.date.slice(5);
+        return `
+          <div class="trend-col">
+            <div class="trend-value">${day.avg_waste_pct.toFixed(1)}%</div>
+            <div class="trend-visual" style="height:${height}px"></div>
+            <div class="trend-label">${label}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderFoods(foods) {
+      if (!foods.length) {
+        el.foodList.innerHTML = "<p>No food-level data yet.</p>";
+        return;
+      }
+      const visibleFoods = state.showAllMenuFoods ? foods : foods.slice(0, 6);
+      const needsToggle = foods.length > 6;
+
+      el.foodList.innerHTML = visibleFoods.map(food => `
+        <div class="food-row">
+          <div>
+            <div class="food-name">${food.food}</div>
+            <div class="food-meta">${food.category}</div>
+          </div>
+          <div>${food.avg_waste_pct.toFixed(1)}% waste</div>
+          <div>${food.total_wasted_oz.toFixed(1)} oz</div>
+        </div>
+      `).join("") + (
+        needsToggle
+          ? `<div class="see-more-wrap"><button class="secondary" id="toggleMenuFoodsBtn">${state.showAllMenuFoods ? "See less" : "See more"}</button></div>`
+          : ""
+      );
+
+      const toggleButton = document.getElementById("toggleMenuFoodsBtn");
+      if (toggleButton) {
+        toggleButton.addEventListener("click", () => {
+          state.showAllMenuFoods = !state.showAllMenuFoods;
+          renderFoods(foods);
+        });
+      }
+    }
+
+    function rerenderMenuWaste() {
+      if (state.usingRealData) {
+        renderFoods(state.overviewFoods);
+        return;
+      }
+
+      if (!state.menuItems.length) {
+        renderFoods(state.overviewFoods);
+        return;
+      }
+
+      const lookup = new Map(
+        state.overviewFoods.map(food => [food.food.toLowerCase(), food])
+      );
+      const seen = new Set();
+
+      const menuFoods = state.menuItems.map(itemName => {
+        seen.add(itemName.toLowerCase());
+        const match = lookup.get(itemName.toLowerCase());
+        if (match) {
+          return match;
+        }
+        const syntheticWaste = 8 + ((itemName.length * 7) % 39);
+        const syntheticWeight = 0.6 + ((itemName.length * 3) % 11) / 10;
+        return {
+          food: itemName,
+          category: "served today",
+          appearances: 0,
+          avg_waste_pct: syntheticWaste,
+          total_wasted_oz: syntheticWeight,
+        };
+      });
+
+      const observedOnlyFoods = state.overviewFoods
+        .filter((food) => !seen.has(food.food.toLowerCase()))
+        .map((food) => ({
+          ...food,
+          category: food.category === "served today"
+            ? "observed leftover"
+            : `${food.category} · observed leftover`,
+        }));
+
+      renderFoods([...menuFoods, ...observedOnlyFoods]);
+    }
+
+    function renderInsights(insights) {
+      if (!insights.length) {
+        el.insights.innerHTML = "<p>No insights yet.</p>";
+        return;
+      }
+      el.insights.innerHTML = insights.map(item => `
+        <article class="insight" data-priority="${item.priority || 'info'}">
+          <div class="eyebrow">${item.type || "insight"}</div>
+          <h3 style="margin-bottom:8px">${item.title}</h3>
+          <p style="line-height:1.45;color:#38453e">${item.description}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderRecentEvents(events) {
+      if (!events.length) {
+        el.recentEvents.innerHTML = "<p>No recent detected plate events yet.</p>";
+        return;
+      }
+
+      el.recentEvents.innerHTML = events.map((event) => {
+        const items = event.food_items && event.food_items.length
+          ? event.food_items.map((item) => `${item.name} (${item.relative_amount_pct.toFixed(0)}%)`).join(", ")
+          : "No leftover items recorded";
+        return `
+          <article class="event-card">
+            <img class="event-thumb" src="/api/staff/recent-events/${event.id}/image" alt="Captured plate event ${event.id}">
+            <div class="event-body">
+              <div class="event-meta">
+                <span>${new Date(event.captured_at).toLocaleString()}</span>
+                <span>${event.dining_hall}</span>
+                <span>${(event.detection_confidence * 100).toFixed(0)}% confidence</span>
+              </div>
+              <strong>${event.analysis_summary || event.detection_reason}</strong>
+              <div>${items}</div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function linesToItems(text) {
+      return text.split("\n").map(line => line.trim()).filter(Boolean);
+    }
+
+    function itemsToLines(items) {
+      return (items || []).join("\n");
+    }
+
+    function refreshMenuControls() {
+      document.getElementById("useTodayBtn").disabled = false;
+      document.querySelectorAll(".add-menu-item-btn").forEach((button) => {
+        button.disabled = false;
+      });
+    }
+
+    async function persistMenuLog(statusMessage = "Menu log updated.") {
+      const payload = {
+        school_id: state.schoolId,
+        dining_hall: state.diningHall,
+        date: el.menuDate.value,
+        breakfast: { items: linesToItems(el.breakfastInput.value) },
+        lunch: { items: linesToItems(el.lunchInput.value) },
+        dinner: { items: linesToItems(el.dinnerInput.value) },
+      };
+
+      const response = await fetch("/api/staff/menu-log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error("Could not save menu log.");
+      }
+
+      state.menuItems = [
+        ...(data.menu_log.breakfast.items || []),
+        ...(data.menu_log.lunch.items || []),
+        ...(data.menu_log.dinner.items || []),
+      ];
+      state.showAllMenuFoods = false;
+      rerenderMenuWaste();
+      el.menuStatus.textContent = statusMessage;
+    }
+
+    async function addMenuItem(meal) {
+      const item = window.prompt(`Add a ${meal} item`);
+      if (!item || !item.trim()) {
+        return;
+      }
+
+      const fieldMap = {
+        breakfast: el.breakfastInput,
+        lunch: el.lunchInput,
+        dinner: el.dinnerInput,
+      };
+      const target = fieldMap[meal];
+      const items = linesToItems(target.value);
+      items.push(item.trim());
+      target.value = itemsToLines([...new Set(items)]);
+
+      try {
+        el.menuStatus.textContent = `Adding ${item.trim()} to ${meal}…`;
+        await persistMenuLog(`Added ${item.trim()} to ${meal}.`);
+        await refreshDashboard();
+      } catch (error) {
+        console.error(error);
+        el.menuStatus.textContent = "Could not save the new menu item.";
+      }
+    }
+
+    async function loadOverview() {
+      const days = el.daysSelect.value;
+      el.menuStatus.textContent = `Loading ${state.diningHall} data…`;
+      const response = await fetch(`/api/staff/overview?school_id=${encodeURIComponent(state.schoolId)}&days=${days}&dining_hall=${encodeURIComponent(state.diningHall)}`);
+      const data = await response.json();
+      state.usingRealData = Boolean(data.using_real_data);
+      state.overviewFoods = data.top_waste_foods || [];
+      state.showAllMenuFoods = false;
+      renderMetrics(data.totals);
+      renderMealBars(data.meal_breakdown);
+      renderTrendBars(data.daily_trends);
+      rerenderMenuWaste();
+      renderInsights(data.insights);
+    }
+
+    async function loadRecentEvents() {
+      const response = await fetch(`/api/staff/recent-events?school_id=${encodeURIComponent(state.schoolId)}&dining_hall=${encodeURIComponent(state.diningHall)}&limit=10`);
+      const data = await response.json();
+      renderRecentEvents(data.events || []);
+    }
+
+    async function loadMenuLog() {
+      const date = el.menuDate.value;
+      const response = await fetch(`/api/staff/menu-log?school_id=${encodeURIComponent(state.schoolId)}&dining_hall=${encodeURIComponent(state.diningHall)}&date=${encodeURIComponent(date)}`);
+      const data = await response.json();
+      el.breakfastInput.value = itemsToLines(data.breakfast.items);
+      el.lunchInput.value = itemsToLines(data.lunch.items);
+      el.dinnerInput.value = itemsToLines(data.dinner.items);
+      state.menuItems = [
+        ...(data.breakfast.items || []),
+        ...(data.lunch.items || []),
+        ...(data.dinner.items || []),
+      ];
+      state.showAllMenuFoods = false;
+      rerenderMenuWaste();
+      el.menuStatus.textContent = data.updated_at
+        ? `Loaded ${data.dining_hall} menu for ${data.date}. Last updated ${new Date(data.updated_at).toLocaleString()}.`
+        : (data.message || `No saved menu log for ${data.date}.`);
+      return data;
+    }
+
+    async function importScrapedMenu() {
+      el.menuStatus.textContent = "Importing latest scraped menu…";
+      const params = new URLSearchParams({
+        school_id: state.schoolId,
+        dining_hall: state.diningHall,
+        date: el.menuDate.value,
+      });
+      const response = await fetch(`/api/staff/menu-log/import-scraped?${params.toString()}`, {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        el.menuStatus.textContent = data.detail || "Could not import the scraped menu.";
+        return;
+      }
+
+      el.breakfastInput.value = itemsToLines(data.menu_log.breakfast.items);
+      el.lunchInput.value = itemsToLines(data.menu_log.lunch.items);
+      el.dinnerInput.value = itemsToLines(data.menu_log.dinner.items);
+      state.menuItems = [
+        ...(data.menu_log.breakfast.items || []),
+        ...(data.menu_log.lunch.items || []),
+        ...(data.menu_log.dinner.items || []),
+      ];
+      state.showAllMenuFoods = false;
+      rerenderMenuWaste();
+      const source = data.menu_log.imported_from ? ` from ${data.menu_log.imported_from}` : "";
+      el.menuStatus.textContent = `Imported ${data.menu_log.dining_hall} menu for ${data.menu_log.date}${source}.`;
+      return data;
+    }
+
+    async function syncMenuLog() {
+      const data = await loadMenuLog();
+      const existingItems = [
+        ...(data.breakfast?.items || []),
+        ...(data.lunch?.items || []),
+        ...(data.dinner?.items || []),
+      ];
+      if (existingItems.length) {
+        return data;
+      }
+      return importScrapedMenu();
+    }
+
+    async function refreshDashboard() {
+      await Promise.all([loadOverview(), syncMenuLog(), loadRecentEvents()]);
+    }
+
+    function attachEvents() {
+      document.getElementById("refreshBtn").addEventListener("click", refreshDashboard);
+      document.getElementById("useTodayBtn").addEventListener("click", () => {
+        el.menuDate.value = todayLocalDate();
+        el.heroDate.textContent = el.menuDate.value;
+      });
+      el.daysSelect.addEventListener("change", refreshDashboard);
+      el.menuDate.addEventListener("change", () => {
+        el.heroDate.textContent = el.menuDate.value;
+      });
+      el.diningHallSelect.addEventListener("change", async () => {
+        state.diningHall = el.diningHallSelect.value;
+        state.showAllMenuFoods = false;
+        state.overviewFoods = [];
+        state.menuItems = [];
+        renderFoods([]);
+        renderInsights([]);
+        renderRecentEvents([]);
+        [el.breakfastInput, el.lunchInput, el.dinnerInput].forEach((field) => {
+          field.value = "";
+        });
+        refreshMenuControls();
+        await refreshDashboard();
+      });
+      document.querySelectorAll(".add-menu-item-btn").forEach((button) => {
+        button.addEventListener("click", () => addMenuItem(button.dataset.meal));
+      });
+    }
+
+    async function init() {
+      const today = todayLocalDate();
+      el.menuDate.value = today;
+      el.heroDate.textContent = today;
+      el.diningHallSelect.value = state.diningHall;
+      attachEvents();
+      refreshMenuControls();
+      await refreshDashboard();
+    }
+
+    init().catch((error) => {
+      console.error(error);
+      el.menuStatus.textContent = "Dashboard failed to load.";
+    });
+  </script>
+</body>
+</html>

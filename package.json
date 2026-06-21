@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "scrape:crossroads-menu": "node browserbase_crossroads_menu_agent.mjs"
+    "scrape:crossroads-menu": "node browserbase_crossroads_menu_agent.mjs",
+    "scrape:all-menus": "node browserbase_crossroads_menu_agent.mjs --all-locations"
   },
   "dependencies": {
     "@browserbasehq/stagehand": "^3.0.0",

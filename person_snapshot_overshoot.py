@@ -25,9 +25,8 @@ from dotenv import load_dotenv
 
 OVERSHOOT_BASE_URL = "https://api.overshoot.ai/v1"
 DEFAULT_PROMPT = (
-    "You are monitoring a fixed security-style camera. Decide whether a real "
-    "plate of food is visible in the latest frame right now. Count partial "
-    "plates as visible if food is clearly on them. Ignore empty plates, bowls, "
+    "You are monitoring a fixed dining hall style camera. Decide whether a real "
+    "plate of food is visible in the latest frame right now only if the full plate is visible in the frame. Ignore empty plates, bowls, "
     "cups, printed pictures of food, and food advertisements. Use the short "
     "video clip only for motion context. Return JSON only with this exact "
     'schema: {"plate_of_food_visible": true, "confidence": 0.0, "reason": "short phrase"}'
